@@ -1,26 +1,26 @@
 ---
-# This config uses the QMC5883L, a triple-axis magnetometer, to read your water meter or gas meter.
+# This config uses the MMC56x3, a triple-axis magnetometer, to read your water meter or gas meter.
 
 substitutions:
   # water or gas
-  device_class: 'water'
+  device_class: 'gas'
 
   # mdi:water or mdi:meter-gas
-  device_icon: 'mdi:water'
+  device_icon: 'mdi:meter-gas'
 
   # For water one of: CCF, ft³, gal, L, m³
   # For gas one of: CCF, ft³, m³
-  volume_unit: 'gal'
+  volume_unit: 'm³'
 
-  i2c_scl: GPIO5  # D1
-  i2c_sda: GPIO4  # D2
+  i2c_scl: GPIO20  # D1
+  i2c_sda: GPIO22  # D2
 
   # Set these only if you have connected two QMC5883L to one device, see esphome-two-meters.yaml
   prefix_name: ''
   prefix_id: ''
 
-  qmc5883l_update_interval: '5ms'
-  qmc5883l_oversampling: '64x'
+  # qmc5883l_update_interval: '5ms'
+  # qmc5883l_oversampling: '64x'
 
   volume_per_half_rotation_initial_value: '0.01008156'
   flow_update_interval_seconds: '10'
@@ -36,7 +36,7 @@ esphome:
 
 logger:
   logs:
-    qmc5883l: INFO
+    mmc5603: INFO
 
 api:
   services:
@@ -267,13 +267,13 @@ sensor:
     filters:
       - delta: 3
 
-  # https://esphome.io/components/sensor/qmc5883l.html
-  - platform: qmc5883l
+  # https://esphome.io/components/sensor/mmc5603.html
+  - platform: mmc5603
     id: ${prefix_id}qmc5883l_id
     i2c_id: ${prefix_id}i2c_bus
-    address: 0x0D
+    address: 0x30
     field_strength_x:
-      id: ${prefix_id}qmc5883l_axis_x
+      id: ${prefix_id}mmc5603_axis_x
       name: ${prefix_name}Magnetic Field Strength X
       disabled_by_default: true
       entity_category: diagnostic
@@ -288,7 +288,7 @@ sensor:
       filters:
         - delta: 3
     field_strength_y:
-      id: ${prefix_id}qmc5883l_axis_y
+      id: ${prefix_id}mmc5603_axis_y
       name: ${prefix_name}Magnetic Field Strength Y
       disabled_by_default: true
       entity_category: diagnostic
@@ -303,7 +303,7 @@ sensor:
       filters:
         - delta: 3
     field_strength_z:
-      id: ${prefix_id}qmc5883l_axis_z
+      id: ${prefix_id}mmc5603_axis_z
       name: ${prefix_name}Magnetic Field Strength Z
       disabled_by_default: true
       entity_category: diagnostic
@@ -317,19 +317,19 @@ sensor:
               }
       filters:
         - delta: 3
-    temperature:
-      id: ${prefix_id}qmc5883l_temperature
-      name: ${prefix_name}Temperature
-      filters:
-        - lambda: "return x + id(${prefix_id}temperature_offset).state;"
-        - sliding_window_moving_average:
-            window_size: 3000
-            send_every: 3000
-        - or:
-            - throttle: 300s
-            - delta: 0.5
-    oversampling: ${qmc5883l_oversampling}
-    update_interval: ${qmc5883l_update_interval}
+    # temperature:
+    #  id: ${prefix_id}qmc5883l_temperature
+    #  name: ${prefix_name}Temperature
+    #  filters:
+    #    - lambda: "return x + id(${prefix_id}temperature_offset).state;"
+    #    - sliding_window_moving_average:
+    #        window_size: 3000
+    #        send_every: 3000
+    #    - or:
+    #        - throttle: 300s
+    #        - delta: 0.5
+    # oversampling: ${qmc5883l_oversampling}
+    # update_interval: ${qmc5883l_update_interval}
 
   - platform: template
     id: ${prefix_id}sensor_half_rotations_total
